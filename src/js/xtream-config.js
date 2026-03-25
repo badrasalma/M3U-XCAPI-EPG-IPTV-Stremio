@@ -18,6 +18,9 @@
     const debugChk = document.getElementById('debugMode');
     const customEpgGroup = document.getElementById('customEpgGroup');
     const customEpgUrlInp = document.getElementById('customEpgUrl');
+    const xtreamUseM3UChk = document.getElementById('xtreamUseM3U');
+    const xtreamOutputGroup = document.getElementById('xtreamOutputGroup');
+    const xtreamOutputInp = document.getElementById('xtreamOutput');
 
     const epgModeRadios = () => [...document.querySelectorAll('input[name="epgMode"]')];
 
@@ -67,6 +70,12 @@
     enableEpgChk.addEventListener('change', syncCustomEpgVisibility);
     epgModeRadios().forEach(r => r.addEventListener('change', syncCustomEpgVisibility));
     syncCustomEpgVisibility();
+
+    if (xtreamUseM3UChk) {
+        xtreamUseM3UChk.addEventListener('change', () => {
+            xtreamOutputGroup.classList.toggle('hidden', !xtreamUseM3UChk.checked);
+        });
+    }
 
     function validateUrl(u) {
         try {
@@ -170,6 +179,8 @@
         const customEpg = (epgMode === 'custom') ? customEpgUrlInp.value.trim() : '';
         const epgOffset = epgOffsetInput.value ? parseFloat(epgOffsetInput.value) : 0;
         const debug = !!(debugChk && debugChk.checked);
+        const useM3U = !!(xtreamUseM3UChk && xtreamUseM3UChk.checked);
+        const m3uOutput = xtreamOutputInp ? xtreamOutputInp.value.trim() : '';
 
         if (!validateUrl(baseUrl)) {
             alert('Invalid Xtream base URL');
@@ -200,7 +211,7 @@
         setProgress(5, 'Starting');
         appendDetail('== PRE-FLIGHT (XTREAM) ==');
         appendDetail(`Base URL: ${baseUrl}`);
-        appendDetail(`Mode: 'JSON API'}`);
+        appendDetail(`Mode: ${useM3U ? 'm3u_plus' : 'JSON API'}`);
         appendDetail(`EPG Mode: ${enableEpgInitial ? (epgMode === 'custom' ? 'Custom URL' : 'Panel XMLTV') : 'Disabled'}`);
         appendDetail(`Debug logging: ${debug ? 'enabled' : 'disabled'}`);
 
@@ -288,6 +299,8 @@
                 xtreamUrl: baseUrl,
                 xtreamUsername: username,
                 xtreamPassword: password,
+                xtreamUseM3U: useM3U,
+                xtreamOutput: m3uOutput || undefined,
                 enableEpg: enableEpgFinal,
                 debug: debug || undefined
             };
@@ -303,7 +316,7 @@
                 categoryCount: categories.size,
                 epgProgrammes: enableEpgFinal ? epgStats.programmes : 0,
                 epgChannels: enableEpgFinal ? epgStats.channels : 0,
-                mode: 'json',
+                mode: useM3U ? 'm3u' : 'json',
                 epgSource: enableEpgFinal
                     ? (epgMode === 'custom' ? 'custom' : 'xtream')
                     : 'disabled'

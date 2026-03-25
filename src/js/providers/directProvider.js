@@ -13,8 +13,9 @@ function hash(str) {
 function baseSeriesName(raw) {
     if (!raw) return '';
     let name = raw
-        .replace(/\bS\d{1,2}E\d{1,2}\b.*$/i, '')
+        .replace(/\bS\d{1,2}E\d{1,3}\b.*$/i, '')
         .replace(/\bSeason\s?\d+.*$/i, '')
+        .replace(/\b(\d{1,2})x(\d{1,3})\b.*$/i, '')
         .replace(/[-._]+$/,'')
         .trim();
     return name;
@@ -22,15 +23,26 @@ function baseSeriesName(raw) {
 
 function extractSeasonEpisode(title) {
     // Returns { season, episode } or null
-    let m = title.match(/\bS(\d{1,2})E(\d{1,2})\b/i);
+    // Standard S01E01 or S1E1
+    let m = title.match(/\bS(\d{1,2})E(\d{1,3})\b/i);
     if (m) return { season: parseInt(m[1], 10), episode: parseInt(m[2], 10) };
+    
     // Alternate "Season X Episode Y"
     m = title.match(/\bSeason\s?(\d{1,2}).*?\bEpisode\s?(\d{1,3})\b/i);
     if (m) return { season: parseInt(m[1], 10), episode: parseInt(m[2], 10) };
+    
     // Alternate "Season X Ep Y"
     m = title.match(/\bSeason\s?(\d{1,2}).*?\bEp\s?(\d{1,3})\b/i);
     if (m) return { season: parseInt(m[1], 10), episode: parseInt(m[2], 10) };
-    // "Sx Exx" compressed? (rare) Already covered by SNNENN pattern above.
+
+    // Pattern "1x01" or "01x01"
+    m = title.match(/\b(\d{1,2})x(\d{1,3})\b/i);
+    if (m) return { season: parseInt(m[1], 10), episode: parseInt(m[2], 10) };
+
+    // Pattern "E01" (assumes Season 1)
+    m = title.match(/\bE(\d{1,3})\b/i);
+    if (m) return { season: 1, episode: parseInt(m[1], 10) };
+
     return null;
 }
 

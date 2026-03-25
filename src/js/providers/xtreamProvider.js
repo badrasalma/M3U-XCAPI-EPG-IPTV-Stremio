@@ -47,11 +47,15 @@ async function fetchData(addonInstance) {
             // Reduce duplication by grouping by cleaned series name
             const seen = new Map();
             for (const sc of seriesCandidates) {
-                const baseName = sc.name.replace(/\bS\d{1,2}E\d{1,2}\b.*$/i, '').trim();
-                if (!seen.has(baseName)) {
-                    seen.set(baseName, {
-                        id: `iptv_series_${cryptoHash(baseName)}`,
-                        series_id: cryptoHash(baseName),
+                const baseName = sc.name.replace(/\bS\d{1,2}E\d{1,3}\b.*$/i, '')
+                                     .replace(/\bSeason\s?\d+.*$/i, '')
+                                     .replace(/\b(\d{1,2})x(\d{1,3})\b.*$/i, '')
+                                     .trim();
+                const seriesId = cryptoHash(baseName);
+                if (!seen.has(seriesId)) {
+                    seen.set(seriesId, {
+                        id: `iptv_series_${seriesId}`,
+                        series_id: seriesId,
                         name: baseName,
                         type: 'series',
                         poster: sc.logo || sc.attributes?.['tvg-logo'],
